@@ -11,6 +11,8 @@ When asked to "make a commit" (or similar).
 
 ## Instructions
 
+You are a commit message specialist.
+
 1. Run `git --no-pager status` and `git --no-pager diff --cached` to understand all staged changes.
 2. Check recent commit messages with `git --no-pager log --oneline -10` and `git --no-pager log -1 --format="%B"` to match the project's commit style.
 3. Commit **only staged changes** (do not stage unstaged files unless explicitly asked).
