@@ -1,6 +1,6 @@
 ---
 name: git
-description: Git commit conventions and workflow for creating well-formatted commits
+description: Use this skill whenever the user asks to commit, make a commit, create a commit, write a commit message, or commit staged changes. Generates Conventional Commits-formatted messages from staged changes with type prefix (feat/fix/refactor/chore/docs/style/test), short summary, and bullet points. Infers ticket prefix and style from recent commits. Commits only staged files, never adds Co-authored-by trailer.
 ---
 
 # git

@@ -1,6 +1,6 @@
 ---
 name: form
-description: Format and sort project files — ignore files, Dockerfile, Docker Compose, package.json, Taskfile
+description: Use this skill whenever the user asks to format, sort, reorder, organize, clean up, or tidy any of these project files - ignore files (.gitignore, .dockerignore, .prettierignore, etc.), Dockerfile, Docker Compose (compose.yml, docker-compose.yml), package.json, or Taskfile (Taskfile.yml, taskfile.yaml). Also use proactively after editing or modifying any of these files to keep them in canonical order. Applies opinionated section ordering, alphabetical sorting within sections, and consistent blank-line separation. Only reorders existing content - never adds or removes entries.
 ---
 
 # form
@@ -8,6 +8,7 @@ description: Format and sort project files — ignore files, Dockerfile, Docker 
 ## When to use
 
 When user asks to format or sort any of:
+
 - `*ignore` files (`.gitignore`, `.dockerignore`, `.prettierignore`, etc.)
 - `Dockerfile`
 - Docker Compose file (`compose.yml`, `docker-compose.yml`)
@@ -30,10 +31,19 @@ Applies to all `*ignore` files found in the project root.
 
 Classify each non-empty, non-comment line into one of four sections:
 
-1. **Dot-folders** — start with `.`, end with `/` (e.g. `.cache/`, `.next/`)
-2. **Dot-files** — start with `.`, do not end with `/` (e.g. `.env`, `.DS_Store`)
-3. **Folders** — do not start with `.`, end with `/` (e.g. `node_modules/`, `dist/`)
-4. **Files** — do not start with `.`, do not end with `/` (e.g. `*.log`, `build.js`)
+1. **Dot-folders** — start with `.`, refer to a directory (e.g. `.cache/`, `.next/`, `.git`)
+2. **Dot-files** — start with `.`, refer to a file (e.g. `.env`, `.DS_Store`, `.gitignore`)
+3. **Folders** — do not start with `.`, refer to a directory (e.g. `node_modules/`, `dist`, `build/`)
+4. **Files** — do not start with `.`, refer to a file (e.g. `*.log`, `build.js`, `README.md`)
+
+### Classifying folder vs file
+
+Ignore-file patterns often omit the trailing `/` even when targeting directories (e.g. `.git`, `node_modules`, `dist`). To classify correctly:
+
+1. If entry ends with `/` → folder.
+2. Else check the project filesystem — if a directory with that name exists at project root → folder; otherwise → file.
+3. For glob patterns (`*.log`, `**/*.local`, `*.tmp`) and negations referring to globs → treat as file unless they explicitly end with `/`.
+4. If in doubt and filesystem check is inconclusive → treat as file.
 
 Within each section, sort entries alphabetically (case-insensitive).
 
@@ -80,10 +90,10 @@ Separate blocks from each other with exactly one blank line.
 
 **Do not reorder instructions** — their order is cache-sensitive and must be preserved.
 
-Formatting rules:
+Formatting rules (apply to **every** instruction including the first one after `FROM`):
+
 - Consecutive instructions with the **same keyword** (e.g. multiple `COPY`, multiple `RUN`) → no blank line between them (grouped together).
-- Instructions with a **different keyword** than the previous one → one blank line before them.
-- No blank line immediately after the `FROM` line.
+- Instructions with a **different keyword** than the previous one → one blank line before them. This includes the first instruction after `FROM` if its keyword is not `FROM`.
 - No trailing blank line at the end of a block.
 
 ### Example
@@ -231,6 +241,7 @@ publishConfig
 Only include keys that exist in the file — omit missing ones.
 
 **Unknown keys** (not in the canonical list above):
+
 - If clearly a tool config (e.g. `prettier`, `eslint`, `jest`, `bun`, `lint-staged`, `husky`, `babel`, `nyc`, etc.) → place after `publishConfig`, sorted alphabetically among other tool keys.
 - Otherwise → place just before tool config keys.
 
@@ -238,11 +249,12 @@ Only include keys that exist in the file — omit missing ones.
 
 Sort values alphabetically (case-insensitive) inside these keys:
 
-- `scripts`
 - `dependencies` — scoped packages (`@scope/pkg`) first, then unscoped, each group alphabetically
 - `peerDependencies` — same rule as `dependencies`
 - `devDependencies` — same rule as `dependencies`
 - `optionalDependencies` — same rule as `dependencies`
+
+**Do not sort** the contents of `scripts` — preserve script order as written by the user.
 
 All other nested objects/arrays: preserve existing order exactly.
 
@@ -274,7 +286,25 @@ run
 tasks
 ```
 
-Separate every root key from the next with exactly one blank line.
+Separate every **top-level** root key from the next with exactly one blank line.
+
+**Do not insert blank lines between nested entries** (e.g. between individual keys inside `env`, `vars`, `dotenv`, or any other root key's contents). Blank line rule applies only at the top level.
+
+Example (correct):
+
+```yaml
+version: 3
+
+dotenv: [".env.local"]
+
+env:
+  DEFAULT_DOCKER_NAME: local
+  DEFAULT_DOCKER_IMAGE: amqp-simulator
+  DEFAULT_DOCKER_TAG: latest
+
+tasks:
+  ...
+```
 
 ### `tasks` — key order within each task
 
@@ -283,27 +313,25 @@ Task names are **not sorted** — preserve their order. Separate tasks from each
 #### Section comments
 
 Tasks may be grouped into named sections. Each section has:
+
 - **Header** `## <label> ##` — immediately before the first task in the section, no blank line between header and task
 - **Separator** `## <dashes> ##` — immediately after the last task in the section, no blank line between task and separator; separator closes the section and its dash count matches the header of **that same section**
 
 ```yaml
-  ## development tasks ##
-  init:
-    ...
+## development tasks ##
+init: ...
 
-  docker:dev:
-    ...
-  ## ----------------- ##
-  ## deployment tasks ##
-  docker:build:
-    ...
+docker:dev: ...
+## ----------------- ##
+## deployment tasks ##
+docker:build: ...
 
-  docker:compose:
-    ...
-  ## ---------------- ##
+docker:compose: ...
+## ---------------- ##
 ```
 
 Dash count = number of characters (including spaces) in `<label>`:
+
 - `## foo bar ##` → "foo bar" = 7 chars → `## ------- ##`
 - `## fizz fizz bazz ##` → "fizz fizz bazz" = 14 chars → `## -------------- ##`
 - `## development tasks ##` → "development tasks" = 17 chars → `## ----------------- ##`
