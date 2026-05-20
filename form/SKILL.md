@@ -196,10 +196,15 @@ Within each volume definition, sort keys in this order (omit missing keys, no bl
 2. `driver`
 3. `external`
 
+### Comment handling
+
+Comments inside nested mappings (e.g. inside `environment`, `volumes`, `ports`) stay attached to the entry **below** them. When sorting or reordering, the comment moves with its attached entry. Standalone group-header comments at the very top of a block (e.g. `# PROGRAM ENVS` at the start of `environment:`) stay at the top of that block.
+
 ### General rules
 
 - Preserve all values, nested structures, comments, and anchors/aliases exactly.
 - Do not add or remove keys — only reorder them.
+- Do not sort the contents of nested mappings (e.g. `environment`, `ports`, `volumes`) — preserve their order unless explicitly stated.
 - Preserve YAML indentation style (2 spaces).
 
 ---
@@ -247,16 +252,16 @@ Only include keys that exist in the file — omit missing ones.
 
 ### Nested key sorting
 
-Sort values alphabetically (case-insensitive) inside these keys:
+> ⚠️ **CRITICAL: NEVER sort `scripts`.** Preserve script order EXACTLY as written by the user. Script names like `dev`, `prod`, `test`, `form`, `lint` follow a workflow order, not alphabetical. Reordering them is a bug.
+
+Sort values alphabetically (case-insensitive) **only** inside these keys:
 
 - `dependencies` — scoped packages (`@scope/pkg`) first, then unscoped, each group alphabetically
 - `peerDependencies` — same rule as `dependencies`
 - `devDependencies` — same rule as `dependencies`
 - `optionalDependencies` — same rule as `dependencies`
 
-**Do not sort** the contents of `scripts` — preserve script order as written by the user.
-
-All other nested objects/arrays: preserve existing order exactly.
+All other nested objects/arrays (including `scripts`, `engines`, `exports`, etc.): preserve existing order exactly.
 
 ### General rules
 
@@ -308,7 +313,11 @@ tasks:
 
 ### `tasks` — key order within each task
 
-Task names are **not sorted** — preserve their order. Separate tasks from each other with one blank line. No blank lines between keys within a single task.
+Task names are **not sorted by name** — but if section comments group them (see below), reorder the sections in this fixed order: `development tasks` → `deployment tasks` → `test tasks`. Within a section, preserve task order. If no section comments exist, preserve task order entirely.
+
+Separate tasks from each other with exactly one blank line.
+
+> ⚠️ **CRITICAL: NO blank lines between keys within a single task.** Every key (`desc`, `summary`, `aliases`, `platforms`, `env`, `vars`, `cmds`, etc.) inside a task MUST be on consecutive lines without any blank line separators. This rule overrides any other formatting instinct.
 
 #### Section comments
 
