@@ -311,13 +311,54 @@ tasks:
   ...
 ```
 
-### `tasks` — key order within each task
+### `tasks` — task ordering
 
-Task names are **not sorted by name** — but if section comments group them (see below), reorder the sections in this fixed order: `development tasks` → `deployment tasks` → `test tasks`. Within a section, preserve task order. If no section comments exist, preserve task order entirely.
+If section comments group tasks (see below), reorder the **sections** in this fixed order:
+
+1. `## development tasks ##`
+2. `## deployment tasks ##`
+3. `## test tasks ##`
+
+Within each section, reorder tasks in this fixed order (omit missing ones):
+
+- **development**: `init` → `docker:dev`
+- **deployment**: `docker:build` → `docker:compose`
+- **test**: preserve original order
+
+If no section comments exist, preserve all task order entirely.
 
 Separate tasks from each other with exactly one blank line.
 
-> ⚠️ **CRITICAL: NO blank lines between keys within a single task.** Every key (`desc`, `summary`, `aliases`, `platforms`, `env`, `vars`, `cmds`, etc.) inside a task MUST be on consecutive lines without any blank line separators. This rule overrides any other formatting instinct.
+### `tasks` — key order within each task
+
+> ⚠️ **CRITICAL: NO blank lines between keys within a single task.** Every key (`desc`, `summary`, `aliases`, `platforms`, `env`, `vars`, `cmds`, etc.) inside a task MUST be on **consecutive lines** without any blank line separators. This rule overrides any other formatting instinct. If you see a blank line between two task-level keys, REMOVE IT.
+
+**Wrong:**
+
+```yaml
+  init:
+    desc: >
+      Initialize project
+
+    aliases: [i]
+
+    platforms: [linux]
+
+    cmds:
+      - cmd: bun install
+```
+
+**Correct:**
+
+```yaml
+  init:
+    desc: >
+      Initialize project
+    aliases: [i]
+    platforms: [linux]
+    cmds:
+      - cmd: bun install
+```
 
 #### Section comments
 
