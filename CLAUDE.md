@@ -40,10 +40,13 @@ skills/
 │   └── SKILL.md        # File formatting/sorting skill
 ├── git/
 │   └── SKILL.md        # Commit message generation skill
+├── .gitignore          # Excludes .agents/ and .claude/ (local tool dirs)
 └── CLAUDE.md           # This file
 ```
 
 Each skill directory contains exactly one `SKILL.md`. Adding a new skill = create `<name>/SKILL.md`.
+
+`.agents/` and `.claude/` are gitignored — local Claude Code and agents config, not committed.
 
 <!-- END AUTO-MANAGED -->
 
