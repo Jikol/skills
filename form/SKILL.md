@@ -186,6 +186,26 @@ Within each network definition, sort keys in this order (omit missing keys, no b
 2. `driver`
 3. `external`
 
+### `volumes` — naming convention
+
+> ⚠️ **CRITICAL: Volume names must be prefixed with the service name that uses them.** Format: `<service-name>-<purpose>`. Both the top-level volume key and its `name` field must follow this pattern.
+
+Example:
+
+```yaml
+services:
+  my-service:
+    volumes:
+      - my-service-data:/data/path
+
+volumes:
+  my-service-data:
+    name: ${DOCKER_NAME:?error}-my-service-data
+    external: true
+```
+
+Rule: top-level key = `<service-name>-<purpose>`, `name` value = `${DOCKER_NAME:?error}-<service-name>-<purpose>`.
+
 ### `volumes` — key order within each volume
 
 Volume names are **not sorted** — preserve their order. Separate volumes from each other with one blank line.
@@ -294,6 +314,8 @@ tasks
 Separate every **top-level** root key from the next with exactly one blank line.
 
 **Do not insert blank lines between nested entries** (e.g. between individual keys inside `env`, `vars`, `dotenv`, or any other root key's contents). Blank line rule applies only at the top level.
+
+> ⚠️ **CRITICAL: Do NOT sort `vars` or `env` entries alphabetically.** Preserve their order exactly as written. Variable declaration order often encodes dependency (a later var may reference an earlier one) or intentional grouping.
 
 Example (correct):
 
